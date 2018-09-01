@@ -16,7 +16,7 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	init_odd_none(E),
 	init_even_white(F),
 	init_odd_white(G),
-	init_even_white(H),print_board(Board,1),set_value(Board,p(7,3),b),replace_in_board(Board,p(7,3),p(8,4),b),nl,print_board(Board,1).
+	init_even_white(H),print_board(Board,1),set_value(Board,p(7,3),b),replace_in_board(Board,p(7,3),p(8,4),b),nl,print_board(Board,1),nl,replace_in_board(Board,p(8,4),p(7,5),qb),print_board(Board,1).
 
 
 init_odd_black(Line):- /*Initializing black soldiers in odd numbered rows*/
@@ -57,17 +57,9 @@ init_even_white(Line):- /*Initializing white soldiers in even numbered rows*/
 
 replace_in_board(Board,P1,P2,Player):- /*Placing the value of P1 cell in P2 and clearing P1 cell's value*/
 	legal_move(Board,P1,P2,Player),
+	set_value(Board,P2,Player),
 	clear(Board,P1),
-	(
-	    check_queen(P2) ->
-	    (
-	        Player = b  ->
-	            set_value(Board,P2,qb)
-	        ;   set_value(Board,P2,qw)
-	    )
-	).
-
-
+	check_queen(Board,P2,Player).
 
 set_value(Board,p(X,Y),Value):- /*Setting the cell in cordinates (X,Y) to be Value*/
 	arg(X,Board,Line),
@@ -99,10 +91,10 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),w):- /*Check validity of the white soldiers m
     between(1,8,Y2),
     position(Board,p(X2,Y2),Element),\+atom(Element),
     (
-        (T1 is X1-1,T2 is Y1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
-        (T1 is X1-1,T2 is Y1-1,Y2 = T1 , X2 = T2);
-        (T1 is X1-2, T2 is Y1-2,T3 is X1-1,T4 is Y1-1,Y2 = T1, X2 = T2, position(Board,p(T3,T4),b)); /*Eating a black soldier*/
-        (T1 is X1-2, T2 is Y1+2, T3 is X1+1,T4 is Y1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
+        (T1 is X1-1,T2 is Y1+1, Y2 = T2,X2 = T1); /*Regular move - moving across the board to the right or left*/
+        (T1 is X1-1,T2 is Y1-1, Y2 = T2,X2 = T1);
+        (T1 is X1-2, T2 is Y1-2,T3 is X1-1,T4 is Y1-1,Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),clear(Board,p(T3,T4))); /*Eating a black soldier*/
+        (T1 is X1-2, T2 is Y1+2,T3 is X1-1,T4 is Y1+1,Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
 
@@ -111,19 +103,40 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),b):- /*Check validity of the white soldiers m
     between(1,8,X2),
     between(1,8,Y2),position(Board,p(X2,Y2),Element),\+atom(Element),
     (
-        (T1 is X1+1,T2 is Y1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
-        (T1 is X1+1,T2 is Y1-1,Y2 = T1 , X2 = T2);
-        (T1 is X1+2, T2 is Y1-2,T3 is Y1+1, T4 is X1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4))); /*Eating a black soldier*/
-        (T1 is X1+2, T2 is Y1+2,T3 is Y1+1, T4 is X1+1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
+        (T1 is X1+1,T2 is Y1+1, Y2 = T2,X2 = T1); /*Regular move - moving across the board to the right or left*/
+        (T1 is X1+1,T2 is Y1-1,Y2 = T2 , X2 = T1);
+        (T1 is X1+2, T2 is Y1-2,T3 is X1+1, T4 is Y1-1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),clear(Board,p(T3,T4))); /*Eating a black soldier*/
+        (T1 is X1+2, T2 is Y1+2,T3 is X1+1, T4 is Y1+1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
+legal_move(Board,p(X1,Y1),p(X2,Y2),Player):- /*Check validity of the white queen move*/
+    (Player = qw; Player = qb),
+    position(Board,p(X1,Y1),Player),
+    between(1,8,X2),
+    between(1,8,Y2),position(Board,p(X2,Y2),Element),\+atom(Element),
+    second_player(Player,SecondPlayer),
+    (
+        (T1 is X1+1,T2 is Y1+1, Y2 = T2,X2 = T1); /*Regular move - moving across the board to the right or left*/
+        (T1 is X1+1,T2 is Y1-1,Y2 = T2 , X2 = T1);
+        (T1 is X1-1,T2 is Y1+1, Y2 = T2,X2 = T1);
+        (T1 is X1-1,T2 is Y1-1,Y2 = T2 , X2 = T1);
+        (T1 is X1+2, T2 is Y1-2,T3 is X1+1, T4 is Y1-1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),SecondPlayer),clear(Board,p(T3,T4))); /*Eating a black soldier*/
+        (T1 is X1+2, T2 is Y1+2,T3 is X1+1, T4 is Y1+1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),SecondPlayer),clear(Board,p(T3,T4)));
+        (T1 is X1-2, T2 is Y1-2,T3 is X1-1, T4 is Y1-1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),SecondPlayer),clear(Board,p(T3,T4)));
+        (T1 is X1-2, T2 is Y1+2,T3 is X1-1, T4 is Y1+1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),SecondPlayer),clear(Board,p(T3,T4)))
+    ).
 
-
-check_queen(p(X,_)):-
-    write(X),
-    X = 8;
-    X = 1.
-
+check_queen(Board,p(X,Y),Player):-
+    (
+        (X = 8; X = 1) ->
+        (
+            Player = b  ->
+     	        set_value(Board,p(X,Y),qb)
+        ;	Player = w ->
+     	        set_value(Board,p(X,Y),qw)
+        )
+        ;   write('')
+    ).
 
 
 position(Board,p(X,Y),Res):- /*Saving the cell in cordinates (X,Y) in the variable Res*/
@@ -147,3 +160,8 @@ print_line(Line,N):-
 	write(X),tab(1),write('|'),tab(1),
 	N1 is N + 1,
 	print_line(Line,N1).
+
+second_player(Player,SecondPlayer):-
+    Player = w ->
+        SecondPlayer = b;
+        SecondPlayer = w.
