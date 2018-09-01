@@ -7,7 +7,7 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	functor(E,fifth,8),
 	functor(F,sixth,8),
 	functor(G,seventh,8),
-	functor(H,eighth,8).
+	functor(H,eighth,8),
 
 	init_odd_black(A),
 	init_even_black(B),
