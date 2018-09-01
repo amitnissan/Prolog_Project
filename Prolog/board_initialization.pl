@@ -16,7 +16,7 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	init_odd_none(E),
 	init_even_white(F),
 	init_odd_white(G),
-	init_even_white(H).
+	init_even_white(H),print_board(Board,1),legal_move(Board,p(3,3),p(1,1),2,w).
 
 
 init_odd_black(Line):- /*Initializing black soldiers in odd numbered rows*/
@@ -57,6 +57,7 @@ init_even_white(Line):- /*Initializing white soldiers in even numbered rows*/
 
 replace_in_board(Board,P1,P2):- /*Placing the value of P1 cell in P2 and clearing P1 cell's value*/
 	position(Board,P1,Temp),
+	legal_move(Board,P1,P2,Temp),
 	set_value(Board,P2,Temp),
 	clear(Board,P1).
 
@@ -70,27 +71,41 @@ set_value(Board,p(X,Y),Value):- /*Setting the cell in cordinates (X,Y) to be Val
 
 clear(Board,p(X,Y)):- /*Clearing the cell in cordinates (X,Y) to its original color in the board (without soldiers on it)*/
 	(
-		mod(X,2) = 0	->
+		0 is mod(X,2) 	->
 		(
-			mod(Y,2) = 0	->
+			0 is mod(Y,2) 	->
+				set_value(Board,p(X,Y),0)
+
+			;	set_value(Board,p(X,Y),1)
+		)
+	;	0 is mod(Y,2) 	->
 				set_value(Board,p(X,Y),1)
 
 			;	set_value(Board,p(X,Y),0)
-		)
-	;	mod(X,2) \= 0	->
-		(
-			mod(Y,2) = 0	->
-				set_value(Board,p(X,Y),1)
 
-			;	set_value(Board,p(X,Y),0)
-		)
 	).
+
+
+
+legal_move(Board,p(X1,Y1),p(X2,Y2),Element,w):-
+    between(1,8,X2),
+    between(1,8,Y2),
+    \+atom(Element),
+    (
+        (T1 is Y1+1,T2 is X1+1, Y2 = T1,X2 = T2);
+        (T1 is Y1+1,T2 is X1-1,Y2 = T1 , X2 = T2);
+        (T1 is Y1+2, T2 is X1-2,T3 is Y1+1, T4 is X1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)));
+        (T1 is Y1+2, T2 is X1+2,T3 is Y1+1, T4 is X1+1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
+    ).
+
+
 
 
 
 position(Board,p(X,Y),Res):- /*Saving the cell in cordinates (X,Y) in the variable Res*/
 	arg(X,Board,Line),
 	arg(Y,Line,Res).
+
 
 
 
