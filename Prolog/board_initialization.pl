@@ -93,27 +93,27 @@ clear(Board,p(X,Y)):- /*Clearing the cell in cordinates (X,Y) to its original co
 
 
 
-legal_move(Board,p(X1,Y1),p(X2,Y2),w):-
+legal_move(Board,p(X1,Y1),p(X2,Y2),w):- /*Check validity of the white soldiers move*/
     position(Board,p(X1,Y1),w),
     between(1,8,X2),
     between(1,8,Y2),
     position(Board,p(X2,Y2),Element),\+atom(Element),
     (
-        (T1 is Y1-1,T2 is X1+1, Y2 = T1,X2 = T2);
+        (T1 is Y1-1,T2 is X1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
         (T1 is Y1-1,T2 is X1-1,Y2 = T1 , X2 = T2);
-        (T1 is Y1-2, T2 is X1-2,T3 is X1-1,T4 is Y1-1,Y2 = T1, X2 = T2, position(Board,p(T3,T4),b));
+        (T1 is Y1-2, T2 is X1-2,T3 is X1-1,T4 is Y1-1,Y2 = T1, X2 = T2, position(Board,p(T3,T4),b)); /*Eating a black soldier*/
         (T1 is Y1-2, T2 is X1+2, T3 is X1+1,T4 is Y1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
 
-legal_move(Board,p(X1,Y1),p(X2,Y2),b):-
+legal_move(Board,p(X1,Y1),p(X2,Y2),b):- /*Check validity of the white soldiers move*/
     position(Board,p(X1,Y1),b),
     between(1,8,X2),
     between(1,8,Y2),position(Board,p(X2,Y2),Element),\+atom(Element),
     (
-        (T1 is Y1+1,T2 is X1+1, Y2 = T1,X2 = T2);
+        (T1 is Y1+1,T2 is X1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
         (T1 is Y1+1,T2 is X1-1,Y2 = T1 , X2 = T2);
-        (T1 is Y1+2, T2 is X1-2,T3 is Y1+1, T4 is X1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)));
+        (T1 is Y1+2, T2 is X1-2,T3 is Y1+1, T4 is X1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4))); /*Eating a black soldier*/
         (T1 is Y1+2, T2 is X1+2,T3 is Y1+1, T4 is X1+1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
@@ -129,9 +129,6 @@ check_queen(p(X,_)):-
 position(Board,p(X,Y),Res):- /*Saving the cell in cordinates (X,Y) in the variable Res*/
 	arg(X,Board,Line),
 	arg(Y,Line,Res).
-
-
-
 
 
 print_board(_,9):-!.
