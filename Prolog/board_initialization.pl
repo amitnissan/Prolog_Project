@@ -16,7 +16,7 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	init_odd_none(E),
 	init_even_white(F),
 	init_odd_white(G),
-	init_even_white(H),print_board(Board,1),legal_move(Board,p(3,3),p(1,1),2,w).
+	init_even_white(H),print_board(Board,1),set_value(Board,p(7,3),b),replace_in_board(Board,p(7,3),p(8,4),b),nl,print_board(Board,1).
 
 
 init_odd_black(Line):- /*Initializing black soldiers in odd numbered rows*/
@@ -55,11 +55,17 @@ init_even_white(Line):- /*Initializing white soldiers in even numbered rows*/
 	setarg(7,Line,w),setarg(8,Line,0).
 
 
-replace_in_board(Board,P1,P2):- /*Placing the value of P1 cell in P2 and clearing P1 cell's value*/
-	position(Board,P1,Temp),
-	legal_move(Board,P1,P2,Temp),
-	set_value(Board,P2,Temp),
-	clear(Board,P1).
+replace_in_board(Board,P1,P2,Player):- /*Placing the value of P1 cell in P2 and clearing P1 cell's value*/
+	legal_move(Board,P1,P2,Player),
+	clear(Board,P1),
+	(
+	    check_queen(P2) ->
+	    (
+	        Player = b  ->
+	            set_value(Board,P2,qb)
+	        ;   set_value(Board,P2,qw)
+	    )
+	).
 
 
 
@@ -87,10 +93,23 @@ clear(Board,p(X,Y)):- /*Clearing the cell in cordinates (X,Y) to its original co
 
 
 
-legal_move(Board,p(X1,Y1),p(X2,Y2),Element,w):-
+legal_move(Board,p(X1,Y1),p(X2,Y2),w):-
+    position(Board,p(X1,Y1),w),
     between(1,8,X2),
     between(1,8,Y2),
-    \+atom(Element),
+    position(Board,p(X2,Y2),Element),\+atom(Element),
+    (
+        (T1 is Y1-1,T2 is X1+1, Y2 = T1,X2 = T2);
+        (T1 is Y1-1,T2 is X1-1,Y2 = T1 , X2 = T2);
+        (T1 is Y1-2, T2 is X1-2,T3 is X1-1,T4 is Y1-1,Y2 = T1, X2 = T2, position(Board,p(T3,T4),b));
+        (T1 is Y1-2, T2 is X1+2, T3 is X1+1,T4 is Y1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
+    ).
+
+
+legal_move(Board,p(X1,Y1),p(X2,Y2),b):-
+    position(Board,p(X1,Y1),b),
+    between(1,8,X2),
+    between(1,8,Y2),position(Board,p(X2,Y2),Element),\+atom(Element),
     (
         (T1 is Y1+1,T2 is X1+1, Y2 = T1,X2 = T2);
         (T1 is Y1+1,T2 is X1-1,Y2 = T1 , X2 = T2);
@@ -99,6 +118,11 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),Element,w):-
     ).
 
 
+
+check_queen(p(X,_)):-
+    write(X),
+    X = 8;
+    X = 1.
 
 
 
