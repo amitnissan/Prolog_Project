@@ -16,7 +16,7 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	init_odd_none(E),
 	init_even_white(F),
 	init_odd_white(G),
-	init_even_white(H), write("hello").
+	init_even_white(H), write("hello")amit the fucker .
 
 
 init_odd_black(Line):- /*Initializing black soldiers in odd numbered rows*/
