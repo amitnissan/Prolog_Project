@@ -99,10 +99,10 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),w):- /*Check validity of the white soldiers m
     between(1,8,Y2),
     position(Board,p(X2,Y2),Element),\+atom(Element),
     (
-        (T1 is Y1-1,T2 is X1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
-        (T1 is Y1-1,T2 is X1-1,Y2 = T1 , X2 = T2);
-        (T1 is Y1-2, T2 is X1-2,T3 is X1-1,T4 is Y1-1,Y2 = T1, X2 = T2, position(Board,p(T3,T4),b)); /*Eating a black soldier*/
-        (T1 is Y1-2, T2 is X1+2, T3 is X1+1,T4 is Y1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
+        (T1 is X1-1,T2 is Y1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
+        (T1 is X1-1,T2 is Y1-1,Y2 = T1 , X2 = T2);
+        (T1 is X1-2, T2 is Y1-2,T3 is X1-1,T4 is Y1-1,Y2 = T1, X2 = T2, position(Board,p(T3,T4),b)); /*Eating a black soldier*/
+        (T1 is X1-2, T2 is Y1+2, T3 is X1+1,T4 is Y1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
 
@@ -111,10 +111,10 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),b):- /*Check validity of the white soldiers m
     between(1,8,X2),
     between(1,8,Y2),position(Board,p(X2,Y2),Element),\+atom(Element),
     (
-        (T1 is Y1+1,T2 is X1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
-        (T1 is Y1+1,T2 is X1-1,Y2 = T1 , X2 = T2);
-        (T1 is Y1+2, T2 is X1-2,T3 is Y1+1, T4 is X1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4))); /*Eating a black soldier*/
-        (T1 is Y1+2, T2 is X1+2,T3 is Y1+1, T4 is X1+1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
+        (T1 is X1+1,T2 is Y1+1, Y2 = T1,X2 = T2); /*Regular move - moving across the board to the right or left*/
+        (T1 is X1+1,T2 is Y1-1,Y2 = T1 , X2 = T2);
+        (T1 is X1+2, T2 is Y1-2,T3 is Y1+1, T4 is X1-1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4))); /*Eating a black soldier*/
+        (T1 is X1+2, T2 is Y1+2,T3 is Y1+1, T4 is X1+1, Y2 = T1, X2 = T2, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
 
