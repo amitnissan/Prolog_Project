@@ -166,7 +166,7 @@ turn(Board,player,Color):-
 turn(Board,computer,Color):-
     write('Computer turn'),
     read(P1),
-    read(P2),write(Color),
+    read(P2),
     replace_in_board(Board,P1,P2,Color),
 	second_player(Color,Next_color),
 	print_board(Board,1),
