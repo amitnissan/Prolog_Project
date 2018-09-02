@@ -158,18 +158,19 @@ turn(Board,player,Color):-
     read(P1),
     read(P2),
     replace_in_board(Board,P1,P2,Color),
-	second_player(Color,Next_color),
+	second_player(Color,Next_color),write(Next_color),
 	print_board(Board,1),
 	turn(Board,computer,Next_color).
 
 
-turn(Board,player,Color):-
+turn(Board,computer,Color):-
     write('Computer turn'),
     read(P1),
-    read(P2),
+    read(P2),write(Color),
     replace_in_board(Board,P1,P2,Color),
 	second_player(Color,Next_color),
-	turn(Board,computer,Next_color).
+	print_board(Board,1),
+	turn(Board,player,Next_color).
 
 
 
