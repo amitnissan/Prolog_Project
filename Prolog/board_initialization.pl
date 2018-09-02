@@ -1,4 +1,4 @@
-test:- /*Defining and initializing the checkers' board and rows*/
+start:- /*Defining and initializing the checkers' board and rows*/
 	functor(Board,board,8),Board = board(A,B,C,D,E,F,G,H),
 	functor(A,first,8),
 	functor(B,second,8),
@@ -9,6 +9,7 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	functor(G,seventh,8),
 	functor(H,eighth,8),
 
+
 	init_odd_black(A),
 	init_even_black(B),
 	init_odd_black(C),
@@ -16,7 +17,15 @@ test:- /*Defining and initializing the checkers' board and rows*/
 	init_odd_none(E),
 	init_even_white(F),
 	init_odd_white(G),
-	init_even_white(H),print_board(Board,1),set_value(Board,p(7,3),b),replace_in_board(Board,p(7,3),p(8,4),b),nl,print_board(Board,1),nl,replace_in_board(Board,p(8,4),p(7,5),qb),print_board(Board,1).
+	init_even_white(H),
+	print_board(Board,1),
+    write('please select a player to start the game, enter 1 to start, 2 to be second'),nl,
+    read(V),
+        (
+            V =1 ->
+                turn(Board,player,w)
+        ;   turn(Board,computer,w)
+        ).
 
 
 init_odd_black(Line):- /*Initializing black soldiers in odd numbered rows*/
@@ -142,6 +151,36 @@ check_queen(Board,p(X,Y),Player):-
 position(Board,p(X,Y),Res):- /*Saving the cell in cordinates (X,Y) in the variable Res*/
 	arg(X,Board,Line),
 	arg(Y,Line,Res).
+
+
+turn(Board,player,Color):-
+    write('insert your next move'),
+    read(P1),
+    read(P2),
+    replace_in_board(Board,P1,P2,Color),
+	second_player(Color,Next_color),
+	print_board(Board,1),
+	turn(Board,computer,Next_color).
+
+
+turn(Board,player,Color):-
+    write('Computer turn'),
+    read(P1),
+    read(P2),
+    replace_in_board(Board,P1,P2,Color),
+	second_player(Color,Next_color),
+	turn(Board,computer,Next_color).
+
+
+
+
+
+
+
+
+
+
+
 
 
 print_board(_,9):-!.
