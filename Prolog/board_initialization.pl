@@ -19,7 +19,7 @@ start:- /*Defining and initializing the checkers' board and rows*/
 	init_odd_white(G),
 	init_even_white(H),
 	print_board(Board,1),
-    write('please select a player to start the game, enter 1 to start, 2 to be second'),nl,
+	write('please select a player to start the game, enter 1 to start, 2 to be second'),nl,
     read(V),
         (
             V =1 ->
@@ -65,7 +65,7 @@ init_even_white(Line):- /*Initializing white soldiers in even numbered rows*/
 
 
 replace_in_board(Board,P1,P2,Player):- /*Placing the value of P1 cell in P2 and clearing P1 cell's value*/
-	legal_move(Board,P1,P2,Player),
+	legal_move(s(Board,Player),P1,P2),
 	set_value(Board,P2,Player),
 	clear(Board,P1),
 	check_queen(Board,P2,Player).
@@ -94,7 +94,7 @@ clear(Board,p(X,Y)):- /*Clearing the cell in cordinates (X,Y) to its original co
 
 
 
-legal_move(Board,p(X1,Y1),p(X2,Y2),w):- /*Check validity of the white soldiers move*/
+legal_move(s(Board,w),p(X1,Y1),p(X2,Y2)):- /*Check validity of the white soldiers move*/
     position(Board,p(X1,Y1),w),
     between(1,8,X2),
     between(1,8,Y2),
@@ -107,7 +107,7 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),w):- /*Check validity of the white soldiers m
     ).
 
 
-legal_move(Board,p(X1,Y1),p(X2,Y2),b):- /*Check validity of the white soldiers move*/
+legal_move(s(Board,b),p(X1,Y1),p(X2,Y2)):- /*Check validity of the white soldiers move*/
     position(Board,p(X1,Y1),b),
     between(1,8,X2),
     between(1,8,Y2),position(Board,p(X2,Y2),Element),\+atom(Element),
@@ -118,7 +118,7 @@ legal_move(Board,p(X1,Y1),p(X2,Y2),b):- /*Check validity of the white soldiers m
         (T1 is X1+2, T2 is Y1+2,T3 is X1+1, T4 is Y1+1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),clear(Board,p(T3,T4)))
     ).
 
-legal_move(Board,p(X1,Y1),p(X2,Y2),Player):- /*Check validity of the white queen move*/
+legal_move(s(Board,Player),p(X1,Y1),p(X2,Y2)):- /*Check validity of the white queen move*/
     (Player = qw; Player = qb),
     position(Board,p(X1,Y1),Player),
     between(1,8,X2),
@@ -158,31 +158,84 @@ turn(Board,player,Color):-
     read(P1),
     read(P2),
     replace_in_board(Board,P1,P2,Color),
-	second_player(Color,Next_color),write(Next_color),
+	second_player(Color,Next_color),
 	print_board(Board,1),
 	turn(Board,computer,Next_color).
 
 
 turn(Board,computer,Color):-
     write('Computer turn'),
-    read(P1),
-    read(P2),
-    replace_in_board(Board,P1,P2,Color),
+    exAlphabeta(s(Board,Color),2,P1/P2),nl,
+    position(Board,P1,Res),
+    set_value(Board,P2,Res),
+    clear(Board,P1),
+    write('computer move was '),write(P1),write(' to '),write(P2),nl,
 	second_player(Color,Next_color),
 	print_board(Board,1),
 	turn(Board,player,Next_color).
 
 
+won(s(Board,Player)):-
+    second_player(Player,SecondPlayer),
+    findall(EndPos,legal_move(s(Board,SecondPlayer),_,EndPos),[]).
 
 
+% Figure 24.5  An implementation of the alpha-beta algorithm.
 
+min_to_move(s(_,player)).
+max_to_move(s(_,computer)).
 
+%moves( Pos, PosList): PosList is a list of all positions which are reachable by a legal move from Pos
+moves( Pos, PosList):-
+    Pos = s(Board,Color),
+    \+ (won(s(Board,Color))),
+    findall(StartPos/EndPos,legal_move(s(Board,Color),StartPos,EndPos),PosList),
+    PosList \= [].
 
+exAlphabeta(s(BoardFunctor,StartTurn), Depth,Next_Move)  :-
+    alphabeta(s(BoardFunctor,StartTurn), -1000000, 1000000, Next_Move, _,Depth),nl.
 
+alphabeta( Pos, Alpha, Beta, GoodPos, Val,MaxDepth)  :-
+    MaxDepth >0,
+    moves( Pos, PosList), !,
+    NewMaxDepth is MaxDepth - 1,
+    boundedbest( PosList, Alpha, Beta, GoodPos, Val,NewMaxDepth)
+    ;
+    staticval( Pos, Val).                              % Static value of Pos
 
+staticval( _, 14).
 
+boundedbest( [Pos | PosList], Alpha, Beta, GoodPos, GoodVal,MaxDepth)  :-
+  alphabeta( Pos, Alpha, Beta, _, Val,MaxDepth),
+  goodenough( PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal,MaxDepth).
 
+goodenough( [], _, _, Pos, Val, Pos, Val,_)  :-  !.    % No other candidate
 
+goodenough( _, Alpha, Beta, Pos, Val, Pos, Val,_)  :-
+    min_to_move( Pos), Val > Beta, !                   % Maximizer attained upper bound
+    ;
+    max_to_move( Pos), Val < Alpha, !.                 % Minimizer attained lower bound
+
+goodenough( PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal,MaxDepth)  :-
+    newbounds( Alpha, Beta, Pos, Val, NewAlpha, NewBeta),    % Refine bounds
+    boundedbest( PosList, NewAlpha, NewBeta, Pos1, Val1,MaxDepth),
+    betterof( Pos, Val, Pos1, Val1, GoodPos, GoodVal).
+
+newbounds( Alpha, Beta, Pos, Val, Val, Beta)  :-
+    min_to_move( Pos), Val > Alpha, !.                 % Maximizer increased lower bound
+
+newbounds( Alpha, Beta, Pos, Val, Alpha, Val)  :-
+    max_to_move( Pos), Val < Beta, !.                 % Minimizer decreased upper bound
+
+newbounds( Alpha, Beta, _, _, Alpha, Beta).          % Otherwise bounds unchanged
+
+betterof( Pos, Val, _, Val1, Pos, Val)  :-        % Pos better than Pos1
+    min_to_move( Pos), Val > Val1, !
+    ;
+    max_to_move( Pos), Val < Val1, !.
+
+betterof( _, _, Pos1, Val1, Pos1, Val1).             % Otherwise Pos1 better
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 print_board(_,9):-!.
 
