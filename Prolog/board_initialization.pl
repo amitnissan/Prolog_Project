@@ -28,6 +28,7 @@ start:- /*Defining and initializing the checkers' board and rows*/
         ).
 
 
+
 init_odd_black(Line):- /*Initializing black soldiers in odd numbered rows*/
 	setarg(1,Line,0),setarg(2,Line,b),setarg(3,Line,0),
 	setarg(4,Line,b),setarg(5,Line,0),setarg(6,Line,b),
@@ -258,3 +259,32 @@ second_player(Player,SecondPlayer):-
     Player = w ->
         SecondPlayer = b;
         SecondPlayer = w.
+
+
+num_in_board(_,9,0,_).
+
+num_in_board(Board,X,Num,Kind):-
+	arg(X,Board,Line),
+	num_in_line(Line,1,N1,Kind),
+	X1 is X + 1,
+	num_in_board(Board,X1,N2,Kind),
+	Num is N1 + N2.
+
+
+
+
+
+num_in_line(_,9,0,_):-!.
+
+num_in_line(Line,X,Num,Kind):-
+	X1 is X + 1,
+	num_in_line(Line,X1,Num1,Kind),
+	arg(X,Line,Temp),
+	(
+	    Temp = Kind     ->
+	        Z = 1
+	;   Z = 0
+	),
+	Num is Num1 + Z.
+
+
