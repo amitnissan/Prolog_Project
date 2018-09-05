@@ -122,8 +122,8 @@ legal_move(s(Board,b),p(X1,Y1),p(X2,Y2),ISEATING, PCLEAR):- /*Check validity of 
     (
         (T1 is X1+1,T2 is Y1+1, Y2 = T2,X2 = T1,ISEATING = 0); /*Regular move - moving across the board to the right or left*/
         (T1 is X1+1,T2 is Y1-1,Y2 = T2 , X2 = T1,ISEATING = 0);
-        (T1 is X1+2, T2 is Y1-2,T3 is X1+1, T4 is Y1-1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),ISEATING = 1, PCLEAR = p(T3,T4)); /*Eating a black soldier*/
-        (T1 is X1+2, T2 is Y1+2,T3 is X1+1, T4 is Y1+1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),b),ISEATING = 1, PCLEAR = p(T3,T4))
+        (T1 is X1+2, T2 is Y1-2,T3 is X1+1, T4 is Y1-1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),w),ISEATING = 1, PCLEAR = p(T3,T4)); /*Eating a black soldier*/
+        (T1 is X1+2, T2 is Y1+2,T3 is X1+1, T4 is Y1+1, Y2 = T2, X2 = T1, position(Board,p(T3,T4),w),ISEATING = 1, PCLEAR = p(T3,T4))
     ).
 
 legal_move(s(Board,Player),p(X1,Y1),p(X2,Y2),ISEATING, PCLEAR):- /*Check validity of the white queen move*/
@@ -185,7 +185,7 @@ turn(Board,player,Color):-
 
 turn(Board,computer,Color):-
     write('Computer turn'),
-    exAlphabeta(s(Board,Color),2,s(Newboard,NextPlayer)),
+    exAlphabeta(s(Board,Color),1,s(Newboard,NextPlayer)),
     print_board(Newboard,1),
     turn(Newboard,player,NextPlayer).
 
@@ -231,7 +231,7 @@ alphabeta( Pos, Alpha, Beta, GoodPos, Val,MaxDepth)  :-
     NewMaxDepth is MaxDepth - 1,
     boundedbest( PosList, Alpha, Beta, GoodPos, Val,NewMaxDepth)
     ;
-    staticval(Pos, Val).                              % Static value of Pos
+    heuristic(Pos, Val).                              % Static value of Pos
 
 staticval( s(Board,Player),Val):-
 	num_in_board(Board,1,Np,Player),
@@ -308,8 +308,26 @@ num_in_board(Board,X,Num,Kind):-
    num_in_board(Board,X1,N2,Kind),
    Num is N1 + N2.
 
+moveable_soldiers(Board,Soldier,Moveable):-
+       (
+            setof(s(P1,Soldier),P2^legal_move(s(Board,Soldier),P1,P2,_,_),Res) ->
+                length(Res,Moveable)
+            ;
+            Moveable = 0
+       ).
 
-
+heuristic(s(Board,_),Func):-
+    moveable_soldiers(Board,qw,Xw),
+    moveable_soldiers(Board,w,Yw),
+    moveable_soldiers(Board,qb,Xb),
+    moveable_soldiers(Board,b,Yb),
+    num_in_line(Board,1,TempZw,w),
+    Zw is TempZw - Yw,
+    num_in_line(Board,1,TempZb,b),
+    Zb is TempZb - Yb,
+    FuncW is 2*Xw + 1.5*Yw + Zw,
+    FuncB is 2*Xb + 1.5*Yb + Zb,
+    Func is FuncW - FuncB.
 
 
 num_in_line(_,9,0,_):-!.
