@@ -184,6 +184,7 @@ turn(Board,player,Color):-
 
 
 turn(Board,computer,Color):-
+    write('Computer turn'),
     exAlphabeta(s(Board,Color),2,s(Newboard,NextPlayer)),
     print_board(Newboard,1),
     turn(Newboard,player,NextPlayer).
