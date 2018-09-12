@@ -252,7 +252,11 @@ turn(Board,player,Color,Is_first,P,Level,Size):-
         ;    write('Incorrect input, please try again  '),fail
         )
     ;   (
-              Input = p(X1,Y1)/p(X2,Y2),replace_in_board(Board,p(X1,Y1),p(X2,Y2),Color,0,Size)  ->
+          (
+            (same(Color,Next),moveable_soldiers(Board,Color,Size,0),moveable_soldiers(Board,Next,Size,0))  ->
+              write('computer won - game over!')
+
+          ;   Input = p(X1,Y1)/p(X2,Y2),replace_in_board(Board,p(X1,Y1),p(X2,Y2),Color,0,Size)  ->
               print_board(Board,Size),
               (
                   won(s(Board,Color,_),Size)   ->
@@ -266,19 +270,24 @@ turn(Board,player,Color,Is_first,P,Level,Size):-
                )
         ;      write('Incorrect input, please try again  '),fail
         )
+      )
     ).
 
 
 turn(Board,computer,Color,Level,Size):-
-          write('Computer turn'),
+      (
+        (same(Color,Next),moveable_soldiers(Board,Color,Size,0),moveable_soldiers(Board,Next,Size,0)) ->
+            write('player won - game over!')
+      ;   write('Computer turn'),
           exAlphabeta(s(Board,Color,computer),Level,Size,s(Newboard,NextColor,_,P1,P2)),
           write('computer move was : '),write(P1),tab(2),write('->'),tab(2), write(P2),nl,print_board(Newboard,Size),
           (
-                won(s(Board,Color,_),Size)   ->
+                won(s(Newboard,Color,_),Size)   ->
                        write('computer won - game over!')
           ;     turn(Newboard,player,NextColor,1,_,Level,Size)
 
-          ).
+          )
+      ).
 
 handle(Input,Is_first):-
 	(
@@ -293,20 +302,19 @@ handle(Input,Is_first):-
 	).
 
 won(s(Board,Player,_),Size):-
+    nl,write(Player),nl,
     second_color(Player,SecondPlayer),
     (
         SecondPlayer = qb ->
-          Second = b
-    ;   SecondPlayer = qw ->
           Second = w
+    ;   SecondPlayer = qw ->
+          Second = b
     ;   Second = SecondPlayer
     ),
     num_in_board(Board,1,0,Second,Size).
 
 
-tie(s(Board,Player,_),Size):-
-    second_color(Player,SecondPlayer),nl,
-    findall(Start/EndPos,legal_move(s(Board,SecondPlayer),Start,EndPos,_,_,0,Size),[]).
+
 
 
 move(s(Board,Color,Player),Back,Start,Size,Next_turn):-
@@ -348,6 +356,8 @@ moves( Pos ,PosList,Size):-
 exAlphabeta(Pos, Depth,Size,Next_Move)  :-
     alphabeta(Pos, -1000000, 1000000, Next_Move, _,Depth,Size),nl.
 
+
+
 alphabeta( Pos, Alpha, Beta, GoodPos, Val,MaxDepth,Size)  :-
     MaxDepth >0,
     moves( Pos, PosList,Size), !,
@@ -355,6 +365,7 @@ alphabeta( Pos, Alpha, Beta, GoodPos, Val,MaxDepth,Size)  :-
     boundedbest( PosList, Alpha, Beta, GoodPos, Val,NewMaxDepth,Size)
     ;
     heuristic(Pos,Size,Val).                              % Static value of Pos
+
 
 
 boundedbest( [Pos | PosList], Alpha, Beta, GoodPos, GoodVal,MaxDepth,Size)  :-
@@ -463,18 +474,30 @@ heuristic(s(Board,Color,_,_,_),Size,Func):-
     moveable_soldiers(Board,w,Size,Yw),
     moveable_soldiers(Board,qb,Size,Xb),
     moveable_soldiers(Board,b,Size,Yb),
-    num_in_line(Board,1,TempZw1,w,Size),
-    num_in_line(Board,1,TempZb1,b,Size),
-    num_in_line(Board,1,TempZw2,qw,Size),
-    num_in_line(Board,1,TempZb2,qb,Size),
+    num_in_board(Board,1,TempZw1,w,Size),
+    num_in_board(Board,1,TempZb1,b,Size),
+    num_in_board(Board,1,TempZw2,qw,Size),
+    num_in_board(Board,1,TempZb2,qb,Size),
     FuncW is 1.25*(TempZw1 + TempZw2) + 1.5*Xw + Yw,
     FuncB is 1.25*(TempZb1 + TempZb2) + 1.5*Xb + Yb,
     (
         Color = w   ->
-          Func is FuncB - FuncW
-    ;   Func is FuncW - FuncB
-    ).
+        (
+            (TempZw1 + TempZw2 = 0 ; (moveable_soldiers(Board,qb,Size,0),moveable_soldiers(Board,b,Size,0))) ->
+              Func = -1000
+        ;   (TempZb1 + TempZb2 = 0 ; (moveable_soldiers(Board,qw,Size,0),moveable_soldiers(Board,w,Size,0)))   ->
+              Func = 1000
+        ;   Func is FuncB - FuncW
+        )
 
+    ;   (
+            (TempZw1 + TempZw2 = 0 ; (moveable_soldiers(Board,qb,Size,0),moveable_soldiers(Board,b,Size,0)))  ->
+              Func = 1000
+        ;   (TempZb1 + TempZb2 = 0  ; (moveable_soldiers(Board,qw,Size,0),moveable_soldiers(Board,w,Size,0))) ->
+              Func = -1000
+        ;   Func is FuncW - FuncB
+        )
+    ).
 
 
 num_in_board(_,Index,0,_,Size):-
